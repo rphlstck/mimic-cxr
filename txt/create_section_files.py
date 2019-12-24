@@ -1,5 +1,6 @@
 # This script extracts the conclusion section from MIMIC-CXR reports
 # It outputs them into individual files with at most 10,000 reports.
+import re
 import sys
 import os
 import argparse
@@ -39,7 +40,7 @@ def main(args):
 
     # not all reports can be automatically sectioned
     # we load in some dictionaries which have manually determined sections
-    custom_section_names, custom_indices = sp.custom_mimic_cxr_rules()
+    custom_section_names, custom_indices, typo_list = sp.custom_mimic_cxr_rules()
 
     # get all higher up folders (p00, p01, etc)
     p_grp_folders = os.listdir(reports_path)
@@ -83,6 +84,12 @@ def main(args):
                     idx = custom_indices[s_stem]
                     patient_studies.append([s_stem, text[idx[0]:idx[1]]])
                     continue
+
+                # correct the typos in text
+                if s_stem in typo_list:
+                    for typo in typo_list[s_stem]:
+                        regex = re.compile('\\b'+typo[0]+'\\b')
+                        text = regex.sub(typo[1], text)
 
                 # split text into sections
                 sections, section_names, section_idx = sp.section_text(
@@ -148,6 +155,7 @@ def main(args):
             with open(output_path / f'mimic_cxr_sections.csv', 'w') as fp:
                 csvwriter = csv.writer(fp)
                 for row in patient_studies:
+                    row[1] = row[1].replace('\n', '')
                     csvwriter.writerow(row)
         else:
             # write ~22 files with ~10k reports each
