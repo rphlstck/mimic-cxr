@@ -88,7 +88,7 @@ def main(args):
                 # correct the typos in text
                 if s_stem in typo_list:
                     for typo in typo_list[s_stem]:
-                        regex = re.compile('\\b'+typo[0]+'\\b')
+                        regex = re.compile('\\b'+typo[0]+'\\b', re.IGNORECASE)
                         text = regex.sub(typo[1], text)
 
                 # split text into sections
