@@ -86,11 +86,11 @@ if __name__ == "__main__":
     files = list()
     for h in os.listdir(base_path):
         for pt in os.listdir(base_path / h):
-            for st in os.listdir(base_path / f'{h}{os.sep}{pt}'):
+            for st in [f.name for f in os.scandir(base_path / f'{h}{os.sep}{pt}') if f.is_dir()]:
                 dcm_path = f'{base_path}{os.sep}{h}{os.sep}{pt}{os.sep}{st}'
                 dcms = os.listdir(dcm_path)
 
-                files.extend([f'{dcm_path}{os.sep}{d}' for d in dcms])
+                files.extend([f'{dcm_path}{os.sep}{d}' for d in dcms if pydicom.misc.is_dicom(f'{dcm_path}{os.sep}{d}')])
     files.sort()
 
     N = len(files)
